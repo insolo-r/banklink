@@ -70,6 +70,9 @@ class iPizza implements ProtocolInterface
      */
     public function preparePaymentRequestData($orderId, $sum, $message, $outputEncoding, $language = 'EST', $currency = 'EUR')
     {
+    	
+    	$datetime = new \DateTime('now', new \DateTimeZone('Europe/Tallinn'));
+    	
         $requestData = array(
             Fields::SERVICE_ID       => Services::PAYMENT_REQUEST,
             Fields::PROTOCOL_VERSION => $this->protocolVersion,
@@ -83,7 +86,8 @@ class iPizza implements ProtocolInterface
             Fields::DESCRIPTION      => $message,
             Fields::SUCCESS_URL      => $this->endpointUrl,
             Fields::CANCEL_URL       => $this->endpointUrl,
-            Fields::USER_LANG        => $language
+            Fields::USER_LANG        => $language,
+        	Fields::VK_DATETIME		 => $datetime->format(DATE_ISO8601) //date(DATE_ISO8601, time()),
         );
 
         $requestData = ProtocolUtils::convertValues($requestData, 'UTF-8', $outputEncoding);
@@ -133,7 +137,7 @@ class iPizza implements ProtocolInterface
         } else {
             $status = PaymentResponse::STATUS_ERROR;
         }
-
+        
         $response = new PaymentResponse($status, $responseData);
         $response->setOrderId($responseData[Fields::ORDER_ID]);
 
@@ -157,11 +161,11 @@ class iPizza implements ProtocolInterface
      *
      * @return string
      */
-    protected function getRequestSignature($data)
+    protected function getRequestSignature($fields)
     {
-        $hash = $this->generateHash($data);
+        $hash = $this->generateHash($fields);
 
-        $keyId = openssl_get_privatekey('file://'.$this->privateKey);
+        $keyId = openssl_get_privatekey($this->privateKey);
         openssl_sign($hash, $signature, $keyId);
         openssl_free_key($keyId);
 
@@ -181,11 +185,11 @@ class iPizza implements ProtocolInterface
     protected function verifyResponseSignature(array $responseData, $encoding)
     {
         $hash = $this->generateHash($responseData, $encoding);
-
-        $keyId = openssl_pkey_get_public('file://'.$this->publicKey);
+        
+        $keyId = openssl_pkey_get_public($this->publicKey);
         $result = openssl_verify($hash, base64_decode($responseData[Fields::SIGNATURE]), $keyId);
         openssl_free_key($keyId);
-
+        
         return $result === 1;
     }
 
@@ -202,17 +206,23 @@ class iPizza implements ProtocolInterface
     protected function generateHash(array $data, $encoding = 'UTF-8')
     {
         $id = $data[Fields::SERVICE_ID];
-
+        
         $hash = '';
+        
+//         print_r(Services::getFieldsForService($id)); exit;
+        
         foreach (Services::getFieldsForService($id) as $fieldName) {
             if (!isset($data[$fieldName])) {
                 throw new \LogicException(sprintf('Cannot generate %s service hash without %s field', $id, $fieldName));
             }
 
             $content = $data[$fieldName];
-            $length = $this->mbStrlen ? mb_strlen($content, $encoding) : strlen($content);
 
-            $hash .= str_pad($length, 3, '0', STR_PAD_LEFT) . $content;
+            if($this->mbStrlen){
+            	$hash .= str_pad (mb_strlen($content, $encoding), 3, "0", STR_PAD_LEFT) . $content;
+            } else {
+           		$hash .= str_pad (strlen($content), 3, "0", STR_PAD_LEFT) . $content;
+            }
         }
 
         return $hash;

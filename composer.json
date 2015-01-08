@@ -1,13 +1,13 @@
 {
-    "name": "inori/banklink",
+    "name": "insolo/banklink",
     "type": "library",
     "description": "Banklink is a PHP library that makes integrating various Baltic banks internet services ('bank links') easy, fast and reliable.",
     "keywords": ["Banklink", "Pangalink", "Baltic bank services"],
     "license": "MIT",
     "authors": [
         {
-            "name": "Roman Marintšenko",
-            "email": "inoryy@gmail.com"
+            "name": "Rauli",
+            "email": "rauli@insolo.ee"
         }
     ],
     "require": {
