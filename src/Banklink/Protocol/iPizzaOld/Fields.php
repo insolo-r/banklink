@@ -1,6 +1,6 @@
 <?php
 
-namespace Banklink\Protocol\iPizza;
+namespace Banklink\Protocol\iPizzaOld;
 
 /**
  * List of all fields used by iPizza protocol
@@ -31,8 +31,8 @@ final class Fields
     const SENDER_NAME              = 'VK_SND_NAME';
     const SENDER_BANK_ACC          = 'VK_SND_ACC';
     const TRANSACTION_ID           = 'VK_T_NO';
-//     const TRANSACTION_DATE         = 'VK_T_DATE';
-    const TRANSACTION_DATE         = 'VK_T_DATETIME';
+    const TRANSACTION_DATE         = 'VK_T_DATE';
+//     const TRANSACTION_DATE         = 'VK_T_DATETIME';
 
     // Callback URLs
     const SUCCESS_URL       = 'VK_RETURN';
@@ -46,6 +46,7 @@ final class Fields
 
     const VK_DATETIME		= 'VK_DATETIME';
     const VK_AUTO			= 'VK_AUTO';
+//     const VK_ENCODING 		= 'VK_ENCODING';
 
     /**
      * Can't instantiate this class

@@ -1,6 +1,6 @@
 <?php
 
-namespace Banklink\Protocol\iPizza;
+namespace Banklink\Protocol\iPizzaOld;
 
 /**
  * List of all services available via iPizza
@@ -11,14 +11,14 @@ namespace Banklink\Protocol\iPizza;
 final class Services
 {
     // Requests
-    const PAYMENT_REQUEST      = '1012';
+    const PAYMENT_REQUEST      = '1001';
     const AUTHENTICATE_REQUEST = '3012';
 
     // Responses
-    const PAYMENT_SUCCESS      = '1111';
-    const PAYMENT_CANCEL       = '1911';
-    const PAYMENT_ERROR        = '1911';
-    const AUTHENTICATE_SUCCESS = '3013';
+    const PAYMENT_SUCCESS      = '1101';
+    const PAYMENT_CANCEL       = '1901';
+    const PAYMENT_ERROR        = '1902';
+    const AUTHENTICATE_SUCCESS = '3002';
 
     /**
      * Fetch mandatory fields for a given service
@@ -38,14 +38,14 @@ final class Services
                     Fields::ORDER_ID,
                     Fields::SUM,
                     Fields::CURRENCY,
-//                     Fields::SELLER_BANK_ACC,
-//                     Fields::SELLER_NAME,
+                    Fields::SELLER_BANK_ACC,
+                    Fields::SELLER_NAME,
                     Fields::ORDER_REFERENCE,
                     Fields::DESCRIPTION,
-                    Fields::SUCCESS_URL,
-                    Fields::CANCEL_URL,
+//                     Fields::SUCCESS_URL,
+//                     Fields::CANCEL_URL,
 //                     Fields::USER_LANG,
-                    Fields::VK_DATETIME
+//                     Fields::VK_DATETIME
                 );
             case Services::PAYMENT_SUCCESS:
                 return array(
