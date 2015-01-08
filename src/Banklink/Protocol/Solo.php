@@ -47,7 +47,7 @@ class Solo implements ProtocolInterface
      * @param string  $algorithm
      * @param string  $version
      */
-    public function __construct($sellerId, $privateKey, $endpointUrl, $sellerName = null, $sellerAccNum = null, $algorithm = 'sha256', $version = '0003', $keyVersion = '0001')
+    public function __construct($sellerId, $privateKey, $endpointUrl, $sellerName = null, $sellerAccNum = null, $algorithm = 'md5', $version = '0003', $keyVersion = '0001')
     {
         $this->sellerId            = $sellerId;
         $this->sellerName          = $sellerName;

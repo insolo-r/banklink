@@ -51,4 +51,9 @@ class BanklinkServiceProvider extends ServiceProvider {
 		});
 	}
 	
+	public function provides()
+	{
+		return array('banklink');
+	}
+	
 }
