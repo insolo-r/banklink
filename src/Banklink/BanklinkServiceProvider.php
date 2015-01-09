@@ -47,7 +47,10 @@ class BanklinkServiceProvider extends ServiceProvider {
 					return new Nordea($protocol, $testMode = false, @\Configuration::where('code', '=', 'nordea/vk_dest')->first()->value );
 					
 				case 'estcard':
-					return new Estcard();
+					return new Estcard(	@\Configuration::where('code', '=', 'estcard/url')->first()->value, 
+										@$parameters['return_url'],
+										@\Configuration::where('code', '=', 'estcard/id')->first()->value
+									);
 					
 			}
 		});
