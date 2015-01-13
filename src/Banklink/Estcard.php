@@ -18,8 +18,10 @@ class Estcard
 		'mac' 			=> '', 			// Lang
 		'charEncoding' 	=> 'UTF-8',
 		'feedBackUrl' 	=> '', 			// Lang
-		'delivery' 		=> 'S', 		// S – Electronic delivery; T – Physical delivery 
+		'delivery' 		=> 'S', 		// S â€“ Electronic delivery; T â€“ Physical delivery 
 	);
+	
+	protected $responseFields = array();
 
     public function __construct($requestUrl = null, $returnUrl = null, $id = null)
     {
@@ -31,7 +33,7 @@ class Estcard
     public function preparePaymentRequest($order_id, $sum, $message)
     {
     	$this->parameters['datetime'] 	= date("YmdHis");
-    	$this->parameters['ecuno'] 		= sprintf("%012s", time() . rand(10, 99));
+    	$this->parameters['ecuno'] 		= sprintf("%012s", $order_id);
     	$this->parameters['eamount'] 	= sprintf("%012s", round($sum * 100));
     	
     	$sMacBase = $this->parameters['ver'] .
@@ -72,6 +74,55 @@ class Estcard
     
     public function handleResponse()
     {
-    	
+    	return $this;
     }
+
+    public function isSuccesful()
+    {
+    	
+    	foreach ((array)$_REQUEST as $ixField => $fieldValue) {
+    		$this->responseFields[$ixField] = $fieldValue;
+    	}
+    	
+    	$sSignatureBase = sprintf("%03s", $this->responseFields['ver']) .
+    	sprintf("%-10s", $this->responseFields['id']) .
+    	sprintf("%012s", $this->responseFields['ecuno']) .
+    	sprintf("%06s", $this->responseFields['receipt_no']) .
+    	sprintf("%012s", $this->responseFields['eamount']) .
+    	sprintf("%3s", $this->responseFields['cur']) .
+    	$this->responseFields['respcode'] .
+    	$this->responseFields['datetime'] .
+    	sprintf("%-40s", $this->responseFields['msgdata']) .
+    	sprintf("%-40s", $this->responseFields['actiontext']);
+    	
+    	function hex2str($hex) {
+    		$str = '';
+    		for ($i = 0; $i < strlen($hex); $i += 2) {
+    			$str .= chr(hexdec(substr($hex, $i, 2)));
+    		}
+    		return $str;
+    	}
+    	
+    	$mac = hex2str($this->responseFields['mac']);
+    	
+    	$flKey = openssl_get_publickey(\Configuration::where('code', '=', 'estcard/pubkey')->first()->value);
+    	
+    	if (!openssl_verify($sSignatureBase, $mac, $flKey)) { // invalidSignature
+			return false;
+    	}
+    	if ($this->responseFields['receipt_no'] == 000000) { # Payment was cancelled
+			return false;
+    	}
+
+    	if ($this->responseFields['respcode'] == 000) { # Payment success
+    		return true;
+    	}
+    }
+    
+    public function getOrderId()
+    {
+    	return sprintf("%012s", $this->responseFields['ecuno']);
+    }
+    	
+    	
 }
