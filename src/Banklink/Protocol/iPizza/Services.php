@@ -75,6 +75,16 @@ final class Services
                     Fields::ORDER_REFERENCE,
                     Fields::DESCRIPTION,
                 );
+            case Services::AUTHENTICATE_REQUEST:
+                return array(
+                    Fields::SERVICE_ID,
+                    Fields::PROTOCOL_VERSION,
+                    Fields::SELLER_ID,
+                    Fields::SELLER_ID_RESPONSE,
+                    Fields::ORDER_ID,
+                    Fields::ORDER_REFERENCE,
+                    Fields::DESCRIPTION,
+                );
             default:
                 throw new \InvalidArgumentException('Unsupported service id: '.$serviceId);
         }

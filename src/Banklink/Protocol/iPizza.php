@@ -112,7 +112,7 @@ class iPizza implements ProtocolInterface
     		'VK_RID'				=> $rid
     	);
 
-    	$requestData = ProtocolUtils::convertValues($requestData, 'UTF-8', $outputEncoding);
+    	$requestData = ProtocolUtils::convertValues($requestData, 'UTF-8', 'UTF-8');
     	
     	$requestData[Fields::SIGNATURE] = $this->getRequestSignature($requestData);
     	
