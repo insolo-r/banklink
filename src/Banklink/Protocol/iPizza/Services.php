@@ -12,7 +12,7 @@ final class Services
 {
     // Requests
     const PAYMENT_REQUEST      = '1012';
-    const AUTHENTICATE_REQUEST = '4012';
+    const AUTHENTICATE_REQUEST = '4011';
 
     // Responses
     const PAYMENT_SUCCESS      = '1111';
@@ -80,10 +80,10 @@ final class Services
                     Fields::SERVICE_ID,
                     Fields::PROTOCOL_VERSION,
                     Fields::SELLER_ID,
-                    Fields::SELLER_ID_RESPONSE,
-                    Fields::ORDER_ID,
-                    Fields::ORDER_REFERENCE,
-                    Fields::DESCRIPTION,
+                    Fields::VK_REPLY,
+                    Fields::SUCCESS_URL,
+                    Fields::TRANSACTION_DATE,
+                    Fields::VK_RID,
                 );
             default:
                 throw new \InvalidArgumentException('Unsupported service id: '.$serviceId);

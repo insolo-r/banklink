@@ -33,6 +33,8 @@ final class Fields
     const TRANSACTION_ID           = 'VK_T_NO';
 //     const TRANSACTION_DATE         = 'VK_T_DATE';
     const TRANSACTION_DATE         = 'VK_T_DATETIME';
+    const VK_REPLY	  			   = 'VK_REPLY';
+    const VK_RID				   = 'VK_RID'; 
 
     // Callback URLs
     const SUCCESS_URL       = 'VK_RETURN';
