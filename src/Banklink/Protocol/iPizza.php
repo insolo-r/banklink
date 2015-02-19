@@ -97,6 +97,29 @@ class iPizza implements ProtocolInterface
         return $requestData;
     }
 
+    
+    public function prepareAuthRequestData($rid)
+    {
+    	$datetime = new \DateTime('now', new \DateTimeZone('Europe/Tallinn'));
+    	
+    	$requestData = array(
+            Fields::SERVICE_ID      => Services::AUTHENTICATE_REQUEST,
+            Fields::PROTOCOL_VERSION=> $this->protocolVersion,
+            Fields::SELLER_ID       => $this->sellerId,
+    		'VK_REPLY'				=> 3012,
+    		'VK_RETURN'				=> $this->endpointUrl,
+    		'VK_DATETIME'			=> $datetime->format(DATE_ISO8601),
+    		'VK_RID'				=> $rid
+    	);
+
+    	$requestData = ProtocolUtils::convertValues($requestData, 'UTF-8', $outputEncoding);
+    	
+    	$requestData[Fields::SIGNATURE] = $this->getRequestSignature($requestData);
+    	
+    	return $requestData;
+    	
+    }
+    
     /**
      * Determine which response exactly by service id, if it's supported then call related internal method
      *
