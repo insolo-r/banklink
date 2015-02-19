@@ -106,10 +106,10 @@ class iPizza implements ProtocolInterface
             Fields::SERVICE_ID      => Services::AUTHENTICATE_REQUEST,
             Fields::PROTOCOL_VERSION=> $this->protocolVersion,
             Fields::SELLER_ID       => $this->sellerId,
-    		'VK_REPLY'				=> 3012,
-    		'VK_RETURN'				=> $this->endpointUrl,
-    		'VK_DATETIME'			=> $datetime->format(DATE_ISO8601),
-    		'VK_RID'				=> $rid
+    		Fields::VK_REPLY		=> 3012,
+    		Fields::SUCCESS_URL		=> $this->endpointUrl,
+    		Fields::VK_DATETIME		=> $datetime->format(DATE_ISO8601),
+    		Fields::VK_RID			=> $rid
     	);
 
     	$requestData = ProtocolUtils::convertValues($requestData, 'UTF-8', 'UTF-8');
