@@ -60,7 +60,7 @@ abstract class Banklink
     	$requestData = $this->protocol->prepareAuthRequestData($rid);
     	$requestData = array_merge($requestData, $this->getAdditionalFields());
     
-    	return new Request($this->requestUrl, $requestData);
+    	return new AuthRequest($this->requestUrl, $requestData);
     }
 
     /**
