@@ -82,7 +82,7 @@ final class Services
                     Fields::SELLER_ID,
                     Fields::VK_REPLY,
                     Fields::SUCCESS_URL,
-                    Fields::TRANSACTION_DATE,
+                    Fields::VK_DATETIME,
                     Fields::VK_RID,
                 );
             default:
