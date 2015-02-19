@@ -3,6 +3,7 @@
 namespace Banklink;
 
 use Banklink\Request\PaymentRequest;
+use Banklink\Request\AuthRequest;
 
 use Banklink\Protocol\ProtocolInterface;
 
