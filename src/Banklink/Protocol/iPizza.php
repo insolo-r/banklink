@@ -185,7 +185,7 @@ class iPizza implements ProtocolInterface
     {
     	// if response was verified, try to guess status by service id
     	if ($verificationSuccess) {
-    		$status = $responseData[Fields::SERVICE_ID] == Services::PAYMENT_SUCCESS ? PaymentResponse::STATUS_SUCCESS : PaymentResponse::STATUS_CANCEL;
+    		$status = $responseData[Fields::SERVICE_ID] == Services::AUTHENTICATE_SUCCESS ? PaymentResponse::STATUS_SUCCESS : PaymentResponse::STATUS_CANCEL;
     	} else {
     		$status = PaymentResponse::STATUS_ERROR;
     	}
@@ -265,7 +265,7 @@ class iPizza implements ProtocolInterface
             }
 
             $content = $data[$fieldName];
-
+// 				echo $fieldName.' => '.$data[$fieldName].'<br/>';
             if($this->mbStrlen){
             	$hash .= str_pad (mb_strlen($content, $encoding), 3, "0", STR_PAD_LEFT) . $content;
             } else {
