@@ -6,6 +6,7 @@ use Banklink\Protocol\iPizza\Fields,
     Banklink\Protocol\iPizza\Services;
 
 use Banklink\Response\PaymentResponse;
+use Banklink\Response\AuthResponse;
 
 use Banklink\Protocol\Util\ProtocolUtils;
 
@@ -140,6 +141,9 @@ class iPizza implements ProtocolInterface
         if (in_array($service, Services::getPaymentServices())) {
             return $this->handlePaymentResponse($responseData, $verificationSuccess);
         }
+        if (in_array($service, Services::getAuthenticationServices())) {
+            return $this->handleAuthResponse($responseData, $verificationSuccess);
+        }
 
         throw new \InvalidArgumentException('Unsupported service with id: '.$service);
     }
@@ -174,6 +178,26 @@ class iPizza implements ProtocolInterface
         }
 
         return $response;
+    }
+    
+
+    protected function handleAuthResponse(array $responseData, $verificationSuccess)
+    {
+    	// if response was verified, try to guess status by service id
+    	if ($verificationSuccess) {
+    		$status = $responseData[Fields::SERVICE_ID] == Services::PAYMENT_SUCCESS ? PaymentResponse::STATUS_SUCCESS : PaymentResponse::STATUS_CANCEL;
+    	} else {
+    		$status = PaymentResponse::STATUS_ERROR;
+    	}
+    
+    	$response = new AuthResponse($status, $responseData);
+    	$response->setPersonalCode($responseData[Fields::VK_USER_ID]);
+    
+//     	if (AuthResponse::STATUS_SUCCESS === $status) {
+    		    	
+//     	}
+    
+    	return $response;
     }
 
     /**
@@ -210,6 +234,7 @@ class iPizza implements ProtocolInterface
         $hash = $this->generateHash($responseData, $encoding);
         
         $keyId = openssl_pkey_get_public($this->publicKey);
+        
         $result = openssl_verify($hash, base64_decode($responseData[Fields::SIGNATURE]), $keyId);
         openssl_free_key($keyId);
         
@@ -231,8 +256,8 @@ class iPizza implements ProtocolInterface
         $id = $data[Fields::SERVICE_ID];
         
         $hash = '';
-        
-//         print_r(Services::getFieldsForService($id)); exit;
+//         echo '<pre>';
+//         print_r($id); exit;
         
         foreach (Services::getFieldsForService($id) as $fieldName) {
             if (!isset($data[$fieldName])) {
@@ -247,7 +272,6 @@ class iPizza implements ProtocolInterface
            		$hash .= str_pad (strlen($content), 3, "0", STR_PAD_LEFT) . $content;
             }
         }
-
         return $hash;
     }
 }

@@ -18,7 +18,7 @@ final class Services
     const PAYMENT_SUCCESS      = '1111';
     const PAYMENT_CANCEL       = '1911';
     const PAYMENT_ERROR        = '1911';
-    const AUTHENTICATE_SUCCESS = '3013';
+    const AUTHENTICATE_SUCCESS = '3012';
 
     /**
      * Fetch mandatory fields for a given service
@@ -84,6 +84,21 @@ final class Services
                     Fields::SUCCESS_URL,
                     Fields::VK_DATETIME,
                     Fields::VK_RID,
+                );
+            case Services::AUTHENTICATE_SUCCESS:
+                return array(
+                    Fields::SERVICE_ID,
+                    Fields::PROTOCOL_VERSION,
+                    Fields::VK_USER,
+                    Fields::VK_DATETIME,
+                    Fields::SELLER_ID,
+                    Fields::SELLER_ID_RESPONSE,
+                    Fields::VK_USER_NAME,
+                    Fields::VK_USER_ID,
+                    Fields::VK_COUNTRY,
+                    Fields::VK_OTHER,
+                    Fields::VK_TOKEN,
+                    Fields::VK_RID,              
                 );
             default:
                 throw new \InvalidArgumentException('Unsupported service id: '.$serviceId);

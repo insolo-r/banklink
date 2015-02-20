@@ -35,6 +35,13 @@ final class Fields
     const TRANSACTION_DATE         = 'VK_T_DATETIME';
     const VK_REPLY	  			   = 'VK_REPLY';
     const VK_RID				   = 'VK_RID'; 
+    const VK_NONCE				   = 'VK_NONCE'; 
+    const VK_USER_NAME			   = 'VK_USER_NAME'; 
+    const VK_USER_ID			   = 'VK_USER_ID'; 
+    const VK_COUNTRY			   = 'VK_COUNTRY'; 
+    const VK_OTHER			   = 'VK_OTHER'; 
+    const VK_TOKEN			   = 'VK_TOKEN'; 
+    const VK_USER			   = 'VK_USER'; 
 
     // Callback URLs
     const SUCCESS_URL       = 'VK_RETURN';
