@@ -193,9 +193,13 @@ class iPizza implements ProtocolInterface
     	$response = new AuthResponse($status, $responseData);
     	$response->setPersonalCode($responseData[Fields::VK_USER_ID]);
     
-//     	if (AuthResponse::STATUS_SUCCESS === $status) {
-    		    	
-//     	}
+    	if (AuthResponse::STATUS_SUCCESS === $status) {
+
+    		$fullname = $responseData[Fields::VK_USER_NAME];
+    		$response->setFirstname(substr($fullname, 0, strpos($fullname, ' ')));
+    		$response->setLastname(substr($fullname, strpos($fullname, ' ')+1));
+    		
+    	}
     
     	return $response;
     }
@@ -217,7 +221,6 @@ class iPizza implements ProtocolInterface
         openssl_free_key($keyId);
 
         $result = base64_encode($signature);
-
         return $result;
     }
 
@@ -236,6 +239,7 @@ class iPizza implements ProtocolInterface
         $keyId = openssl_pkey_get_public($this->publicKey);
         
         $result = openssl_verify($hash, base64_decode($responseData[Fields::SIGNATURE]), $keyId);
+        
         openssl_free_key($keyId);
         
         return $result === 1;
@@ -256,8 +260,6 @@ class iPizza implements ProtocolInterface
         $id = $data[Fields::SERVICE_ID];
         
         $hash = '';
-//         echo '<pre>';
-//         print_r($id); exit;
         
         foreach (Services::getFieldsForService($id) as $fieldName) {
             if (!isset($data[$fieldName])) {
@@ -265,7 +267,6 @@ class iPizza implements ProtocolInterface
             }
 
             $content = $data[$fieldName];
-// 				echo $fieldName.' => '.$data[$fieldName].'<br/>';
             if($this->mbStrlen){
             	$hash .= str_pad (mb_strlen($content, $encoding), 3, "0", STR_PAD_LEFT) . $content;
             } else {
