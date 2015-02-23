@@ -56,7 +56,38 @@ final class Services
             Fields::ORDER_REFERENCE_RESPONSE,
         );
     }
+    
+    public static function getAuthRequestFields(){
+    	return array(
+    			Fields::A01Y_ACTION_ID,
+    			Fields::A01Y_VERS,
+    			Fields::A01Y_RCVID,
+    			Fields::A01Y_LANGCODE,
+    			Fields::A01Y_STAMP,
+    			Fields::A01Y_IDTYPE,
+    			Fields::A01Y_RETLINK,
+    			Fields::A01Y_CANLINK,
+    			Fields::A01Y_REJLINK,
+    			Fields::A01Y_KEYVERS,
+    			Fields::A01Y_ALG
+    	);
+    }
 
+    public static function getAuthResponseFields()
+    {
+    	return array(
+			Fields::B02K_VERS,
+			Fields::B02K_TIMESTMP,
+			Fields::B02K_IDNBR,
+			Fields::B02K_STAMP,
+			Fields::B02K_CUSTNAME,
+			Fields::B02K_KEYVERS,
+			Fields::B02K_ALG,
+			Fields::B02K_CUSTID,
+			Fields::B02K_CUSTTYPE
+    	);
+    }
+    
     /**
      * Can't instantiate this class
      */

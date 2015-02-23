@@ -5,16 +5,11 @@ namespace Banklink\Protocol;
 use Banklink\Protocol\Solo\Fields,
     Banklink\Protocol\Solo\Services;
 
-use Banklink\Protocol\Solo\Response\PaymentResponse;
+use Banklink\Protocol\Solo\Response\PaymentResponse,
+	Banklink\Response\AuthResponse;
 
 use Banklink\Protocol\Util\ProtocolUtils;
 
-/**
- * This class implements Solo protocol (mainly used by Nordea bank)
- *
- * @author Roman Marintsenko <inoryy@gmail.com>
- * @since  25.11.2012
- */
 class Solo implements ProtocolInterface
 {
     protected $privateKey;
@@ -36,17 +31,7 @@ class Solo implements ProtocolInterface
      */
     protected $algorithm;
 
-    /**
-     * initialize basic data that will be used for all issued service requests
-     *
-     * @param string  $sellerId
-     * @param string  $sellerName
-     * @param integer $sellerAccNum
-     * @param string  $privateKey    Private key string
-     * @param string  $endpointUrl
-     * @param string  $algorithm
-     * @param string  $version
-     */
+
     public function __construct($sellerId, $privateKey, $endpointUrl, $sellerName = null, $sellerAccNum = null, $algorithm = 'md5', $version = '0003', $keyVersion = '0001')
     {
         $this->sellerId            = $sellerId;
@@ -61,17 +46,8 @@ class Solo implements ProtocolInterface
         $this->protocolVersion     = $version;
         $this->keyVersion          = $keyVersion;
     }
-
-    /**
-     * Determine which response exactly by service id, if it's supported then call related internal method
-     *
-     * @todo currently only supports payment response
-     *
-     * @param array  $responseData
-     * @param string $inputEncoding Will most likely always be ISO-8859-1
-     *
-     * @return \Banklink\Response\Response
-     */
+    
+    
     public function handleResponse(array $responseData, $inputEncoding)
     {
         $verification = $this->verifyResponseSignature($responseData, $inputEncoding);
@@ -79,17 +55,35 @@ class Solo implements ProtocolInterface
 
         return $this->handlePaymentResponse($responseData, $verification);
     }
+    
+    
+    public function handleAuthResponse(array $responseData, $inputEncoding)
+    {
+    	
+    	$hash = $this->generateHash($responseData, Services::getAuthResponseFields());
+    	$verification = $hash === $responseData[Fields::B02K_MAC];
+   
+    	$responseData = ProtocolUtils::convertValues($responseData, $inputEncoding, 'UTF-8');
+    	
+        if ($verification) {
+            $status = 1;
+        } else {
+            $status = 0;
+        }
 
-    /**
-     * @param integer  $orderId
-     * @param float    $sum
-     * @param string   $message
-     * @param string   $outputEncoding Will most likely always be ISO-8859-1
-     * @param string   $language
-     * @param string   $currency
-     *
-     * @return array
-     */
+        $response = new AuthResponse($status, $responseData);
+        
+        if ($status == 1) {
+            $response->setPersonalCode($responseData[Fields::B02K_CUSTID]);
+            $fullname = $responseData[Fields::B02K_CUSTNAME];
+            $response->setFirstname(substr($fullname, 0, strpos($fullname, ' ')));
+            $response->setLastname(substr($fullname, strpos($fullname, ' ')+1));
+        }
+
+        return $response;
+    }
+    
+    
     public function preparePaymentRequestData($orderId, $sum, $message, $outputEncoding, $language = 'EST', $currency = 'EUR')
     {
         $requestData = array(
@@ -121,16 +115,32 @@ class Solo implements ProtocolInterface
 
         return $requestData;
     }
-
-    /**
-     * Prepare payment response instance
-     * Some data is only set if response is succesful
-     *
-     * @param array   $responseData
-     * @param boolean $verification
-     *
-     * @return \Banklink\Protocol\Solo\Response\PaymentResponse
-     */
+    
+    
+    public function prepareAuthRequestData()
+    {
+    	$requestData = array(
+    		    Fields::A01Y_ACTION_ID	=> '701',
+			    Fields::A01Y_VERS		=> '0002',
+			    Fields::A01Y_RCVID		=> $this->sellerId,
+			    Fields::A01Y_LANGCODE	=> 'ET',
+			    Fields::A01Y_STAMP		=> date('YmdHis', time()).substr($this->sellerId, 0, 6),
+			    Fields::A01Y_IDTYPE		=> '02',
+			    Fields::A01Y_RETLINK	=> $this->endpointUrl,
+			    Fields::A01Y_CANLINK	=> \URL::to('user'),
+			    Fields::A01Y_REJLINK	=> \URL::to('user'),
+			    Fields::A01Y_KEYVERS	=> $this->keyVersion,
+			    Fields::A01Y_ALG		=> '01' 
+    	);
+    	
+    	$requestData = ProtocolUtils::convertValues($requestData, 'UTF-8', 'ISO-8859-1');
+    	
+    	$requestData[Fields::A01Y_MAC] = $this->getAuthRequestSignature($requestData);
+    	
+    	return $requestData;
+    }
+    
+    
     protected function handlePaymentResponse(array $responseData, $verification)
     {
         // if response was verified, try to guess status by service id
@@ -149,32 +159,20 @@ class Solo implements ProtocolInterface
 
         return $response;
     }
-
-    /**
-     * Generate request signature built with mandatory request data and private key
-     *
-     * @todo currently only supports payment signature generation
-     *
-     * @param array  $data
-     * @param string $encoding
-     *
-     * @return string
-     *
-     * @throws \LogicException
-     */
+    
+    
     protected function getRequestSignature($data)
     {
         return $this->generateHash($data, Services::getPaymentFields());
     }
-
-    /**
-     * Verify that response data is correctly signed
-     *
-     * @param array  $responseData
-     * @param string $encoding Response data encoding
-     *
-     * @return boolean
-     */
+    
+    
+    protected function getAuthRequestSignature($data)
+    {
+        return $this->generateHash($data, Services::getAuthRequestFields());
+    }
+    
+    
     protected function verifyResponseSignature(array $responseData, $encoding)
     {
         if (!isset($responseData[Fields::SIGNATURE_RESPONSE])) {
@@ -187,21 +185,13 @@ class Solo implements ProtocolInterface
 
         return $hash === $responseData[Fields::SIGNATURE_RESPONSE];
     }
-
-    /**
-     * Generate request/response hash based on mandatory fields
-     *
-     * @param array  $data
-     * @param array  $fields
-     *
-     * @return string
-     *
-     * @throws \LogicException
-     */
+    
+    
     protected function generateHash(array $data, array $fields)
     {
         $string = '';
         foreach ($fields as $fieldName) {
+        	
             if (!isset($data[$fieldName])) {
                 throw new \LogicException(sprintf('Cannot generate payment service hash without %s field', $fieldName));
             }
@@ -209,19 +199,11 @@ class Solo implements ProtocolInterface
             $string .= $data[$fieldName].'&';
         }
         $string .= $this->privateKey.'&';
-
+                
         return strtoupper(hash($this->algorithm, $string));
     }
-
-    /**
-     * Get language code for a given string, somewhat standardizing methods with iPizza protocol
-     *
-     * @param string $string
-     *
-     * @return integer
-     *
-     * @throws \InvalidArgumentException
-     */
+    
+    
     protected function getLanguageCodeForString($string)
     {
        $codes = array('ENG' => 3, 'EST' => 4, 'LAT' => 6, 'LIT' => 7);

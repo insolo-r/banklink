@@ -56,9 +56,9 @@ abstract class Banklink
         return new PaymentRequest($this->requestUrl, $requestData);
     }
     
-    public function prepareAuthRequest($rid)
+    public function prepareAuthRequest()
     {
-    	$requestData = $this->protocol->prepareAuthRequestData($rid);
+    	$requestData = $this->protocol->prepareAuthRequestData();
     	$requestData = array_merge($requestData, $this->getAdditionalFields());
     
     	return new AuthRequest($this->requestUrl, $requestData);
@@ -72,6 +72,11 @@ abstract class Banklink
     public function handleResponse(array $responseData)
     {
         return $this->protocol->handleResponse($responseData, $this->getResponseEncoding($responseData));
+    }
+    
+    public function handleAuthResponse(array $responseData)
+    {
+        return $this->protocol->handleAuthResponse($responseData, $this->getResponseEncoding($responseData));
     }
 
     /**
