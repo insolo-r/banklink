@@ -21,7 +21,8 @@ abstract class Banklink
     protected $testRequestUrl;
 
     protected $requestEncoding = 'UTF-8';
-    protected $responseEncoding = 'ISO-8859-1';
+    protected $responseEncoding = 'UTF-8';
+//     protected $responseEncoding = 'ISO-8859-1';
 
     /**
      * @param \Banklink\Protocol\ProtocolInterface $protocol
