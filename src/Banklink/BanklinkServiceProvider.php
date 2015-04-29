@@ -1,4 +1,4 @@
-<?php 
+<?php
 namespace Banklink;
 
 use Illuminate\Support\ServiceProvider;
@@ -6,7 +6,7 @@ use Illuminate\Support\ServiceProvider;
 class BanklinkServiceProvider extends ServiceProvider {
 
 	protected $defer = true;
-	
+
 	public function register()
 	{
 		$this->app->bind('banklink', function($app, $parameters)
@@ -23,7 +23,7 @@ class BanklinkServiceProvider extends ServiceProvider {
 							$mbStrlen = true
 					);
 					return new SEB($protocol, $testMode = false, @\Configuration::where('code', '=', 'seb/vk_dest')->first()->value );
-					
+
 				case 'swedbank':
 					$protocol = new Protocol\iPizza(
 							@\Configuration::where('code', '=', 'swedbank/vk_snd_id')->first()->value,
@@ -35,8 +35,8 @@ class BanklinkServiceProvider extends ServiceProvider {
 							$mbStrlen = true
 					);
 					return new Swedbank($protocol, $testMode = false, @\Configuration::where('code', '=', 'swedbank/vk_dest')->first()->value );
-					
-				case 'nordea':	
+
+				case 'nordea':
 					$protocol = new Protocol\Solo(
 							@\Configuration::where('code', '=', 'nordea/rcv_id')->first()->value,
 							@\Configuration::where('code', '=', 'nordea/mac_key')->first()->value,
@@ -58,19 +58,31 @@ class BanklinkServiceProvider extends ServiceProvider {
                     );
                     return new LHV($protocol, $testMode = false, @\Configuration::where('code', '=', 'lhv/vk_dest')->first()->value );
 
+                case 'danske':
+                    $protocol = new Protocol\iPizza(
+                        @\Configuration::where('code', '=', 'danske/vk_snd_id')->first()->value,
+                        @\Configuration::where('code', '=', 'danske/vk_name')->first()->value,
+                        @\Configuration::where('code', '=', 'danske/vk_acc')->first()->value,
+                        @\Configuration::where('code', '=', 'danske/vk_privkey')->first()->value,
+                        @\Configuration::where('code', '=', 'danske/vk_pubkey')->first()->value,
+                        @$parameters['return_url'],
+                        $mbStrlen = true
+                    );
+                    return new DanskeBank($protocol, $testMode = false, @\Configuration::where('code', '=', 'danske/vk_dest')->first()->value );
+
 				case 'estcard':
-					return new Estcard(	@\Configuration::where('code', '=', 'estcard/url')->first()->value, 
+					return new Estcard(	@\Configuration::where('code', '=', 'estcard/url')->first()->value,
 										@$parameters['return_url'],
 										@\Configuration::where('code', '=', 'estcard/id')->first()->value
 									);
-					
+
 			}
 		});
 	}
-	
+
 	public function provides()
 	{
 		return array('banklink');
 	}
-	
+
 }
