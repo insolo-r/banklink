@@ -44,7 +44,7 @@ class BanklinkServiceProvider extends ServiceProvider {
 							@\Configuration::where('code', '=', 'nordea/rcv_name')->first()->value,
 							@\Configuration::where('code', '=', 'nordea/rcv_account')->first()->value
 					);
-					return new Nordea($protocol, $testMode = false, @\Configuration::where('code', '=', 'nordea/vk_dest')->first()->value );
+					return new Nordea($protocol, $testMode = false, $parameters['auth'] ? \Configuration::where('code', '=', 'nordea/vk_dest_auth')->first()->value : \Configuration::where('code', '=', 'nordea/vk_dest')->first()->value );
 
                 case 'lhv':
                     $protocol = new Protocol\iPizza(
