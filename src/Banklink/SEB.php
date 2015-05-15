@@ -16,7 +16,7 @@ class SEB extends Banklink
     protected $requestUrl = 'https://www.seb.ee/cgi-bin/unet3.sh/un3min.r';
     protected $testRequestUrl = 'https://www.seb.ee/cgi-bin/dv.sh/un3min.r';
 //     protected $testRequestUrl = 'https://pangalink.net/banklink/seb-common';
-    
+
 
     /**
      * Force iPizza protocol
@@ -35,7 +35,7 @@ class SEB extends Banklink
      */
     protected function getEncodingField()
     {
-        return 'VK_CHARSET';
+        return 'VK_ENCODING';
     }
 
     /**
@@ -48,7 +48,7 @@ class SEB extends Banklink
     protected function getAdditionalFields()
     {
         return array(
-            'VK_CHARSET' => $this->requestEncoding
+            'VK_ENCODING' => $this->requestEncoding
         );
     }
 }
