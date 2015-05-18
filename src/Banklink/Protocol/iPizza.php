@@ -200,8 +200,8 @@ class iPizza implements ProtocolInterface
     			$response->setFirstname(substr($fullname, 0, strpos($fullname, ',')));
     			$response->setLastname(substr($fullname, strpos($fullname, ',')+1));
     		} else {
-	    		$response->setFirstname(substr($fullname, 0, strpos($fullname, ' ')));
-	    		$response->setLastname(substr($fullname, strpos($fullname, ' ')+1));
+	    		$response->setFirstname(substr($fullname, strpos($fullname, ' ')+1));
+	    		$response->setLastname(substr($fullname, 0, strpos($fullname, ' ')));
     		}
 
     	}
