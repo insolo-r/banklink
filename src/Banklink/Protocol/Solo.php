@@ -55,16 +55,16 @@ class Solo implements ProtocolInterface
 
         return $this->handlePaymentResponse($responseData, $verification);
     }
-    
-    
+
+
     public function handleAuthResponse(array $responseData, $inputEncoding)
     {
-    	
+
     	$hash = $this->generateHash($responseData, Services::getAuthResponseFields());
     	$verification = $hash === $responseData[Fields::B02K_MAC];
-   
+
     	$responseData = ProtocolUtils::convertValues($responseData, $inputEncoding, 'UTF-8');
-    	
+
         if ($verification) {
             $status = 1;
         } else {
@@ -72,7 +72,7 @@ class Solo implements ProtocolInterface
         }
 
         $response = new AuthResponse($status, $responseData);
-        
+
         if ($status == 1) {
             $response->setPersonalCode($responseData[Fields::B02K_CUSTID]);
             $fullname = $responseData[Fields::B02K_CUSTNAME];
@@ -82,8 +82,8 @@ class Solo implements ProtocolInterface
 
         return $response;
     }
-    
-    
+
+
     public function preparePaymentRequestData($orderId, $sum, $message, $outputEncoding, $language = 'EST', $currency = 'EUR')
     {
         $requestData = array(
@@ -115,8 +115,8 @@ class Solo implements ProtocolInterface
 
         return $requestData;
     }
-    
-    
+
+
     public function prepareAuthRequestData()
     {
     	$requestData = array(
@@ -130,17 +130,17 @@ class Solo implements ProtocolInterface
 			    Fields::A01Y_CANLINK	=> \URL::to('user'),
 			    Fields::A01Y_REJLINK	=> \URL::to('user'),
 			    Fields::A01Y_KEYVERS	=> $this->keyVersion,
-			    Fields::A01Y_ALG		=> '01' 
+			    Fields::A01Y_ALG		=> '01'
     	);
-    	
+
     	$requestData = ProtocolUtils::convertValues($requestData, 'UTF-8', 'ISO-8859-1');
-    	
+
     	$requestData[Fields::A01Y_MAC] = $this->getAuthRequestSignature($requestData);
-    	
+
     	return $requestData;
     }
-    
-    
+
+
     protected function handlePaymentResponse(array $responseData, $verification)
     {
         // if response was verified, try to guess status by service id
@@ -152,27 +152,27 @@ class Solo implements ProtocolInterface
 
         $response = new PaymentResponse($status, $responseData);
         $response->setOrderId($responseData[Fields::ORDER_ID_RESPONSE]);
-        
+
         if (PaymentResponse::STATUS_SUCCESS === $status) {
             $response->setPaymentCode($responseData[Fields::PAYMENT_CODE]);
         }
 
         return $response;
     }
-    
-    
+
+
     protected function getRequestSignature($data)
     {
         return $this->generateHash($data, Services::getPaymentFields());
     }
-    
-    
+
+
     protected function getAuthRequestSignature($data)
     {
         return $this->generateHash($data, Services::getAuthRequestFields());
     }
-    
-    
+
+
     protected function verifyResponseSignature(array $responseData, $encoding)
     {
         if (!isset($responseData[Fields::SIGNATURE_RESPONSE])) {
@@ -185,13 +185,13 @@ class Solo implements ProtocolInterface
 
         return $hash === $responseData[Fields::SIGNATURE_RESPONSE];
     }
-    
-    
+
+
     protected function generateHash(array $data, array $fields)
     {
         $string = '';
         foreach ($fields as $fieldName) {
-        	
+
             if (!isset($data[$fieldName])) {
                 throw new \LogicException(sprintf('Cannot generate payment service hash without %s field', $fieldName));
             }
@@ -199,11 +199,11 @@ class Solo implements ProtocolInterface
             $string .= $data[$fieldName].'&';
         }
         $string .= $this->privateKey.'&';
-                
+
         return strtoupper(hash($this->algorithm, $string));
     }
-    
-    
+
+
     protected function getLanguageCodeForString($string)
     {
        $codes = array('ENG' => 3, 'EST' => 4, 'LAT' => 6, 'LIT' => 7);

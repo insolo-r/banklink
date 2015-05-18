@@ -71,9 +71,9 @@ class iPizza implements ProtocolInterface
      */
     public function preparePaymentRequestData($orderId, $sum, $message, $outputEncoding, $language = 'EST', $currency = 'EUR')
     {
-    	
+
     	$datetime = new \DateTime('now', new \DateTimeZone('Europe/Tallinn'));
-    	
+
         $requestData = array(
             Fields::SERVICE_ID       => Services::PAYMENT_REQUEST,
             Fields::PROTOCOL_VERSION => $this->protocolVersion,
@@ -98,11 +98,11 @@ class iPizza implements ProtocolInterface
         return $requestData;
     }
 
-    
+
     public function prepareAuthRequestData()
     {
     	$datetime = new \DateTime('now', new \DateTimeZone('Europe/Tallinn'));
-    	
+
     	$requestData = array(
             Fields::SERVICE_ID      => Services::AUTHENTICATE_REQUEST,
             Fields::PROTOCOL_VERSION=> $this->protocolVersion,
@@ -114,13 +114,13 @@ class iPizza implements ProtocolInterface
     	);
 
     	$requestData = ProtocolUtils::convertValues($requestData, 'UTF-8', 'UTF-8');
-    	
+
     	$requestData[Fields::SIGNATURE] = $this->getRequestSignature($requestData);
-    	
+
     	return $requestData;
-    	
+
     }
-    
+
     /**
      * Determine which response exactly by service id, if it's supported then call related internal method
      *
@@ -164,7 +164,7 @@ class iPizza implements ProtocolInterface
         } else {
             $status = PaymentResponse::STATUS_ERROR;
         }
-        
+
         $response = new PaymentResponse($status, $responseData);
         $response->setOrderId($responseData[Fields::ORDER_ID]);
 
@@ -179,7 +179,7 @@ class iPizza implements ProtocolInterface
 
         return $response;
     }
-    
+
 
     public function handleAuthResponse(array $responseData, $verificationSuccess)
     {
@@ -189,18 +189,23 @@ class iPizza implements ProtocolInterface
     	} else {
     		$status = PaymentResponse::STATUS_ERROR;
     	}
-    
+
     	$response = new AuthResponse($status, $responseData);
     	$response->setPersonalCode($responseData[Fields::VK_USER_ID]);
-    
+
     	if (AuthResponse::STATUS_SUCCESS === $status) {
 
     		$fullname = $responseData[Fields::VK_USER_NAME];
-    		$response->setFirstname(substr($fullname, 0, strpos($fullname, ' ')));
-    		$response->setLastname(substr($fullname, strpos($fullname, ' ')+1));
-    		
+    		if(strpos($fullname, ',') !== false){
+    			$response->setFirstname(substr($fullname, 0, strpos($fullname, ',')));
+    			$response->setLastname(substr($fullname, strpos($fullname, ',')+1));
+    		} else {
+	    		$response->setFirstname(substr($fullname, 0, strpos($fullname, ' ')));
+	    		$response->setLastname(substr($fullname, strpos($fullname, ' ')+1));
+    		}
+
     	}
-    
+
     	return $response;
     }
 
@@ -235,13 +240,13 @@ class iPizza implements ProtocolInterface
     protected function verifyResponseSignature(array $responseData, $encoding)
     {
         $hash = $this->generateHash($responseData, $encoding);
-        
+
         $keyId = openssl_pkey_get_public($this->publicKey);
-        
+
         $result = openssl_verify($hash, base64_decode($responseData[Fields::SIGNATURE]), $keyId);
-        
+
         openssl_free_key($keyId);
-        
+
         return $result === 1;
     }
 
@@ -258,9 +263,9 @@ class iPizza implements ProtocolInterface
     protected function generateHash(array $data, $encoding = 'UTF-8')
     {
         $id = $data[Fields::SERVICE_ID];
-        
+
         $hash = '';
-        
+
         foreach (Services::getFieldsForService($id) as $fieldName) {
             if (!isset($data[$fieldName])) {
                 throw new \LogicException(sprintf('Cannot generate %s service hash without %s field', $id, $fieldName));
