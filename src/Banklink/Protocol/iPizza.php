@@ -197,11 +197,11 @@ class iPizza implements ProtocolInterface
 
     		$fullname = $responseData[Fields::VK_USER_NAME];
     		if(strpos($fullname, ',') !== false){
-    			$response->setFirstname(substr($fullname, 0, strpos($fullname, ',')));
-    			$response->setLastname(substr($fullname, strpos($fullname, ',')+1));
+    			$response->setLastname(substr($fullname, 0, strpos($fullname, ',')));
+    			$response->setFirstname(substr($fullname, strpos($fullname, ',')+1));
     		} else {
+	    		$response->setFirstname(substr($fullname, 0, strpos($fullname, ' ')));
 	    		$response->setFirstname(substr($fullname, strpos($fullname, ' ')+1));
-	    		$response->setLastname(substr($fullname, 0, strpos($fullname, ' ')));
     		}
 
     	}
