@@ -28,7 +28,12 @@ class DanskeBank extends Banklink
     {
         parent::__construct($protocol, $testMode, $requestUrl);
     }
-
+    
+    protected function getEncodingField()
+    {
+    	return 'VK_ENCODING';
+    }
+    
     /**
      * No additional fields
      *
@@ -38,6 +43,8 @@ class DanskeBank extends Banklink
      */
     protected function getAdditionalFields()
     {
-        return array();
+        return array(
+            'VK_ENCODING' => 'UTF-8'
+        );
     }
 }
