@@ -44,7 +44,7 @@ abstract class Request
         $output = '';
 
         foreach ($this->requestData as $key => $value) {
-            $output .= sprintf('<input name="%s" value="%s" type="hidden" />', strtolower($key), $key, $value);
+            $output .= sprintf('<input name="%s" value="%s" type="hidden" />', $key, $value);
         }
 
         return $output;
