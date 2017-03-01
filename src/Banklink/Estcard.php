@@ -198,5 +198,10 @@ class Estcard
 	      return vsprintf($newformat, $newargv);
 	  }
 
+    public function getRequestData()
+    {
+        return $this->parameters;
+    }
+
 
 }
