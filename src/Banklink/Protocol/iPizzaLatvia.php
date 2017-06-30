@@ -107,10 +107,10 @@ class iPizzaLatvia implements ProtocolInterface
             Fields::SERVICE_ID      => Services::AUTHENTICATE_REQUEST,
             Fields::PROTOCOL_VERSION=> $this->protocolVersion,
             Fields::SELLER_ID       => $this->sellerId,
-    		Fields::VK_REPLY		=> 3012,
+    		Fields::VK_REPLY		=> 3002,
     		Fields::SUCCESS_URL		=> $this->endpointUrl,
-    		Fields::VK_DATETIME		=> $datetime->format(DATE_ISO8601),
-    		Fields::VK_RID			=> rand(1111,9999)
+            Fields::VK_DATE		    => $datetime->format('Y-m-d'),
+            Fields::VK_TIME			=> $datetime->format('H:i:s')
     	);
 
     	$requestData = ProtocolUtils::convertValues($requestData, 'UTF-8', 'UTF-8');
@@ -191,17 +191,26 @@ class iPizzaLatvia implements ProtocolInterface
     	}
 
     	$response = new AuthResponse($status, $responseData);
-    	$response->setPersonalCode($responseData[Fields::VK_USER_ID]);
+    	$response->setPersonalCode($responseData[Fields::VK_USER]);
 
     	if (AuthResponse::STATUS_SUCCESS === $status) {
+            $infoField = explode(';', $responseData[Fields::VK_INFO]);
+            $infoFields = [];
 
-    		$fullname = $responseData[Fields::VK_USER_NAME];
+            foreach($infoField as $field) {
+                list($name, $value) = explode(':', $field);
+                $infoFields[$name] = $value;
+            }
+
+            // $idCode = $infoFields['ISIK'];
+            $fullname = $infoFields['NIMI'];
+
     		if(strpos($fullname, ',') !== false){
     			$response->setLastname(substr($fullname, 0, strpos($fullname, ',')));
     			$response->setFirstname(substr($fullname, strpos($fullname, ',')+1));
     		} else {
 	    		$response->setFirstname(substr($fullname, 0, strpos($fullname, ' ')));
-	    		$response->setFirstname(substr($fullname, strpos($fullname, ' ')+1));
+	    		$response->setLastname(substr($fullname, strpos($fullname, ' ')+1));
     		}
 
     	}
