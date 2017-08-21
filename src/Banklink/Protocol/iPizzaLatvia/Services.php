@@ -10,6 +10,10 @@ namespace Banklink\Protocol\iPizzaLatvia;
  */
 final class Services
 {
+    // Used for latvian SEB
+    const IB_AUTHENTICATE_REQUEST = '0005';
+    const IB_AUTHENTICATE_SUCCESS = '0001';
+    const IB_AUTHENTICATE_DENIED = '0008';
     // Requests
     const PAYMENT_REQUEST      = '1002';
     const AUTHENTICATE_REQUEST = '4001';
@@ -30,6 +34,29 @@ final class Services
     public static function getFieldsForService($serviceId)
     {
         switch ($serviceId) {
+            case Services::IB_AUTHENTICATE_REQUEST:
+                return array(
+                    FieldsIB::SELLER_ID,    // IB_SND_ID
+                    FieldsIB::SERVICE_ID,   // IB_SERVICE
+                    FieldsIB::USER_LANG     // IB_LANG
+                );
+            case Services::IB_AUTHENTICATE_DENIED:
+                return array(
+                    FieldsIB::SELLER_ID,    // IB_SND_ID
+                    FieldsIB::SERVICE_ID,   // IB_SERVICE
+                    FieldsIB::USER_LANG     // IB_LANG
+                );
+            case Services::IB_AUTHENTICATE_SUCCESS:
+                return array(
+                    FieldsIB::SELLER_ID,            // IB_SND_ID
+                    FieldsIB::SERVICE_ID,           // IB_SERVICE
+                    FieldsIB::USER_LANG,            // IB_LANG
+                    FieldsIB::SELLER_ID_RESPONSE,   // IB_REC_ID Beneficiary’s identifier – constant AAA
+                    FieldsIB::VK_USER,              // IB_USER
+                    FieldsIB::VK_DATE,              // IB_DATE
+                    FieldsIB::VK_TIME,              // IB_TIME
+                    FieldsIB::VK_USER_INFO,         // IB_USER_INFO
+                );
             case Services::PAYMENT_REQUEST:
                 return array(
                     Fields::SERVICE_ID,         // VK_SERVICE

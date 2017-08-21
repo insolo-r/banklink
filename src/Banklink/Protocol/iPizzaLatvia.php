@@ -31,6 +31,7 @@ class iPizzaLatvia implements ProtocolInterface
     protected $protocolVersion;
 
     protected $mbStrlen;
+    protected $fieldsClass = Fields::class;
 
     /**
      * initialize basic data that will be used for all issued service requests
@@ -75,25 +76,25 @@ class iPizzaLatvia implements ProtocolInterface
     	$datetime = new \DateTime('now', new \DateTimeZone('Europe/Tallinn'));
 
         $requestData = array(
-            Fields::SERVICE_ID       => Services::PAYMENT_REQUEST,
-            Fields::PROTOCOL_VERSION => $this->protocolVersion,
-            Fields::SELLER_ID        => $this->sellerId,
-            Fields::ORDER_ID         => $orderId,
-            Fields::SUM              => $sum,
-            Fields::CURRENCY         => $currency,
-//             Fields::SELLER_BANK_ACC  => $this->sellerAccountNumber,
-//             Fields::SELLER_NAME      => $this->sellerName,
-            Fields::ORDER_REFERENCE  => ProtocolUtils::generateOrderReference($orderId),
-            Fields::DESCRIPTION      => $message,
-            Fields::SUCCESS_URL      => $this->endpointUrl,
-            Fields::CANCEL_URL       => $this->endpointUrl,
-            Fields::USER_LANG        => $language,
-        	Fields::VK_DATETIME		 => $datetime->format(DATE_ISO8601) //date(DATE_ISO8601, time()),
+            $this->fieldsClass::SERVICE_ID       => Services::PAYMENT_REQUEST,
+            $this->fieldsClass::PROTOCOL_VERSION => $this->protocolVersion,
+            $this->fieldsClass::SELLER_ID        => $this->sellerId,
+            $this->fieldsClass::ORDER_ID         => $orderId,
+            $this->fieldsClass::SUM              => $sum,
+            $this->fieldsClass::CURRENCY         => $currency,
+//             $this->fieldsClass::SELLER_BANK_ACC  => $this->sellerAccountNumber,
+//             $this->fieldsClass::SELLER_NAME      => $this->sellerName,
+            $this->fieldsClass::ORDER_REFERENCE  => ProtocolUtils::generateOrderReference($orderId),
+            $this->fieldsClass::DESCRIPTION      => $message,
+            $this->fieldsClass::SUCCESS_URL      => $this->endpointUrl,
+            $this->fieldsClass::CANCEL_URL       => $this->endpointUrl,
+            $this->fieldsClass::USER_LANG        => $language,
+        	$this->fieldsClass::VK_DATETIME		 => $datetime->format(DATE_ISO8601) //date(DATE_ISO8601, time()),
         );
 
         $requestData = ProtocolUtils::convertValues($requestData, 'UTF-8', $outputEncoding);
 
-        $requestData[Fields::SIGNATURE] = $this->getRequestSignature($requestData);
+        $requestData[$this->fieldsClass::SIGNATURE] = $this->getRequestSignature($requestData);
 
         return $requestData;
     }
@@ -104,18 +105,18 @@ class iPizzaLatvia implements ProtocolInterface
     	$datetime = new \DateTime('now', new \DateTimeZone('Europe/Tallinn'));
 
     	$requestData = array(
-            Fields::SERVICE_ID      => Services::AUTHENTICATE_REQUEST,
-            Fields::PROTOCOL_VERSION=> $this->protocolVersion,
-            Fields::SELLER_ID       => $this->sellerId,
-    		Fields::VK_REPLY		=> 3002,
-    		Fields::SUCCESS_URL		=> $this->endpointUrl,
-            Fields::VK_DATE		    => $datetime->format('Y-m-d'),
-            Fields::VK_TIME			=> $datetime->format('H:i:s')
+            $this->fieldsClass::SERVICE_ID      => Services::AUTHENTICATE_REQUEST,
+            $this->fieldsClass::PROTOCOL_VERSION=> $this->protocolVersion,
+            $this->fieldsClass::SELLER_ID       => $this->sellerId,
+    		$this->fieldsClass::VK_REPLY		=> 3002,
+    		$this->fieldsClass::SUCCESS_URL		=> $this->endpointUrl,
+            $this->fieldsClass::VK_DATE		    => $datetime->format('Y-m-d'),
+            $this->fieldsClass::VK_TIME			=> $datetime->format('H:i:s')
     	);
 
     	$requestData = ProtocolUtils::convertValues($requestData, 'UTF-8', 'UTF-8');
 
-    	$requestData[Fields::SIGNATURE] = $this->getRequestSignature($requestData);
+    	$requestData[$this->fieldsClass::SIGNATURE] = $this->getRequestSignature($requestData);
 
     	return $requestData;
 
@@ -137,7 +138,7 @@ class iPizzaLatvia implements ProtocolInterface
 
         $responseData = ProtocolUtils::convertValues($responseData, $inputEncoding, 'UTF-8');
 
-        $service = $responseData[Fields::SERVICE_ID];
+        $service = $responseData[$this->fieldsClass::SERVICE_ID];
         if (in_array($service, Services::getPaymentServices())) {
             return $this->handlePaymentResponse($responseData, $verificationSuccess);
         }
@@ -160,21 +161,21 @@ class iPizzaLatvia implements ProtocolInterface
     {
         // if response was verified, try to guess status by service id
         if ($verificationSuccess) {
-            $status = $responseData[Fields::SERVICE_ID] == Services::PAYMENT_SUCCESS ? PaymentResponse::STATUS_SUCCESS : PaymentResponse::STATUS_CANCEL;
+            $status = $responseData[$this->fieldsClass::SERVICE_ID] == Services::PAYMENT_SUCCESS ? PaymentResponse::STATUS_SUCCESS : PaymentResponse::STATUS_CANCEL;
         } else {
             $status = PaymentResponse::STATUS_ERROR;
         }
 
         $response = new PaymentResponse($status, $responseData);
-        $response->setOrderId($responseData[Fields::ORDER_ID]);
+        $response->setOrderId($responseData[$this->fieldsClass::ORDER_ID]);
 
         if (PaymentResponse::STATUS_SUCCESS === $status) {
-            $response->setSum($responseData[Fields::SUM]);
-            $response->setCurrency($responseData[Fields::CURRENCY]);
-            $response->setSenderName($responseData[Fields::SENDER_NAME]);
-            $response->setSenderBankAccount($responseData[Fields::SENDER_BANK_ACC]);
-            $response->setTransactionId($responseData[Fields::TRANSACTION_ID]);
-            $response->setTransactionDate(new \DateTime($responseData[Fields::TRANSACTION_DATE]));
+            $response->setSum($responseData[$this->fieldsClass::SUM]);
+            $response->setCurrency($responseData[$this->fieldsClass::CURRENCY]);
+            $response->setSenderName($responseData[$this->fieldsClass::SENDER_NAME]);
+            $response->setSenderBankAccount($responseData[$this->fieldsClass::SENDER_BANK_ACC]);
+            $response->setTransactionId($responseData[$this->fieldsClass::TRANSACTION_ID]);
+            $response->setTransactionDate(new \DateTime($responseData[$this->fieldsClass::TRANSACTION_DATE]));
         }
 
         return $response;
@@ -185,16 +186,16 @@ class iPizzaLatvia implements ProtocolInterface
     {
     	// if response was verified, try to guess status by service id
     	if ($verificationSuccess) {
-    		$status = $responseData[Fields::SERVICE_ID] == Services::AUTHENTICATE_SUCCESS ? PaymentResponse::STATUS_SUCCESS : PaymentResponse::STATUS_CANCEL;
+    		$status = $responseData[$this->fieldsClass::SERVICE_ID] == Services::AUTHENTICATE_SUCCESS ? PaymentResponse::STATUS_SUCCESS : PaymentResponse::STATUS_CANCEL;
     	} else {
     		$status = PaymentResponse::STATUS_ERROR;
     	}
 
     	$response = new AuthResponse($status, $responseData);
-    	$response->setPersonalCode($responseData[Fields::VK_USER]);
+    	$response->setPersonalCode($responseData[$this->fieldsClass::VK_USER]);
 
     	if (AuthResponse::STATUS_SUCCESS === $status) {
-            $infoField = explode(';', $responseData[Fields::VK_INFO]);
+            $infoField = explode(';', $responseData[$this->fieldsClass::VK_INFO]);
             $infoFields = [];
 
             foreach($infoField as $field) {
@@ -252,7 +253,7 @@ class iPizzaLatvia implements ProtocolInterface
 
         $keyId = openssl_pkey_get_public($this->publicKey);
 
-        $result = openssl_verify($hash, base64_decode($responseData[Fields::SIGNATURE]), $keyId);
+        $result = openssl_verify($hash, base64_decode($responseData[$this->fieldsClass::SIGNATURE]), $keyId);
 
         openssl_free_key($keyId);
 
@@ -271,7 +272,7 @@ class iPizzaLatvia implements ProtocolInterface
      */
     protected function generateHash(array $data, $encoding = 'UTF-8')
     {
-        $id = $data[Fields::SERVICE_ID];
+        $id = $data[$this->fieldsClass::SERVICE_ID];
 
         $hash = '';
 
