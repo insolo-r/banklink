@@ -7,6 +7,7 @@ use Banklink\Protocol\CitadeleProtocol;
 class Citadele extends Banklink
 {
     protected $requestUrl = 'https://online.citadele.lv/amai/start.htm';
+    protected $testRequestUrl = 'https://astra.citadele.lv/amai/start.htm';
 
     /**
      * Citadele constructor
