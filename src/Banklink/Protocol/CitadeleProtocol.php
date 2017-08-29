@@ -164,10 +164,66 @@ class CitadeleProtocol implements ProtocolInterface
 
     }
 
-    public function prepareAuthRequestData()
+    public function prepareAuthRequestData($language)
     {
-    	return [];
+        $xml = new \XMLWriter();
+        $datetime = new \DateTime('now', new \DateTimeZone('Europe/Tallinn'));
 
+        $xml->openMemory();
+        $xml->startDocument('1.0','UTF-8');
+        $xml->setIndent(4);
+        $xml->startElement('FIDAVISTA');
+        $xml->writeAttribute('xmlns', 'http://ivis.eps.gov.lv/XMLSchemas/100017/fidavista/v1-2');
+        $xml->writeAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchemainstance');
+        $xml->writeAttribute('xsi:schemaLocation', 'http://ivis.eps.gov.lv/XMLSchemas/100017/fidavista/v1-2 http://ivis.eps.gov.lv/XMLSchemas/100017/fidavista/v1-2/fidavista.xsd');
+
+        $xml->startElement('Header');
+        $xml->writeElement('From', $this->fromId);
+        $xml->writeElement('Timestamp', substr($datetime->format('YmdHisu'), 0, 17));
+
+        $xml->startElement('Extension');
+        $xml->startElement('Amai');
+        $xml->writeAttribute('xmlns', 'http://online.citadele.lv/XMLSchemas/amai/');
+        $xml->writeAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
+        $xml->writeAttribute('xsi:schemaLocation', 'http://online.citadele.lv/XMLSchemas/amai/ http://online.citadele.lv/XMLSchemas/amai/amai.xsd');
+
+        $xml->writeElement('Request', Services::AUTHENTICATE_REQUEST);
+        // FUCKIT
+        $xml->writeElement('RequestUID', uniqid(substr($datetime->format('YmdHisu'), 0, 17), true));
+        $xml->writeElement('Version', '5.0');
+        $xml->writeElement('Language', $language);
+        $xml->writeElement('ReturnURL', $this->endpointUrl);
+        $xml->writeElement('SignatureData');    // placeholder for the signature
+        $xml->endElement(); // Amai
+        $xml->endElement(); // Extension
+        $xml->endElement(); // Header
+        $xml->endElement(); // FIDAVISTA
+        $xml->endDocument();
+        $xmlString = $xml->outputMemory();
+
+        $doc = new \DOMDocument();
+        $doc->loadXML($xmlString);
+
+        $objKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA1, array('type' =>'private'));
+        $objKey->loadKey($this->privateKey);
+
+        $objDSig = new XMLSecurityDSig();
+        $objDSig->setCanonicalMethod(XMLSecurityDSig::EXC_C14N);
+        $objDSig->addReference($doc, XMLSecurityDSig::SHA1, array('http://www.w3.org/2000/09/xmldsig#enveloped-signature'), array('force_uri' => true));
+        $objDSig->sign($objKey);
+        $objDSig->add509Cert($this->publicKey);
+
+        $appendSignatureTo = $doc->getElementsByTagName('SignatureData')->item(0);
+        $objDSig->appendSignature($appendSignatureTo);
+        $xml = $doc->saveXML();
+
+//        exit( var_dump($this->verify($xml)) );
+        $xml = str_replace(["\n", "\t", "\r", "\r\n", '&amp;', '"'], ['', '', '', '', '&amp;amp;', '&quot;'], $xml);
+
+        return [
+            Fields::XML_DATA => $xml
+        ];
+        return $requestData;
     }
 
     /**
