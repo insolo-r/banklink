@@ -117,18 +117,18 @@ class Solo implements ProtocolInterface
     }
 
 
-    public function prepareAuthRequestData()
+    public function prepareAuthRequestData($language = 'ET')
     {
     	$requestData = array(
     		    Fields::A01Y_ACTION_ID	=> '701',
 			    Fields::A01Y_VERS		=> '0002',
 			    Fields::A01Y_RCVID		=> $this->sellerId,
-			    Fields::A01Y_LANGCODE	=> 'ET',
+			    Fields::A01Y_LANGCODE	=> $language,
 			    Fields::A01Y_STAMP		=> date('YmdHis', time()).substr($this->sellerId, 0, 6),
 			    Fields::A01Y_IDTYPE		=> '02',
 			    Fields::A01Y_RETLINK	=> $this->endpointUrl,
-			    Fields::A01Y_CANLINK	=> \URL::to('user'),
-			    Fields::A01Y_REJLINK	=> \URL::to('user'),
+			    Fields::A01Y_CANLINK	=> $this->endpointUrl,
+			    Fields::A01Y_REJLINK	=> $this->endpointUrl,
 			    Fields::A01Y_KEYVERS	=> $this->keyVersion,
 			    Fields::A01Y_ALG		=> '01'
     	);
