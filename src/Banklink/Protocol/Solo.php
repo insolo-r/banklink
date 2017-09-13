@@ -130,9 +130,9 @@ class Solo implements ProtocolInterface
 			    Fields::A01Y_CANLINK	=> $this->endpointUrl,
 			    Fields::A01Y_REJLINK	=> $this->endpointUrl,
 			    Fields::A01Y_KEYVERS	=> $this->keyVersion,
-                Fields::A01Y_ALG		=> $this->algorithm === 'md5' ? '01' : '02'
+			    Fields::A01Y_ALG		=> $this->algorithm === 'md5' ? '01' : '02'
 
-        );
+		);
 
     	$requestData = ProtocolUtils::convertValues($requestData, 'UTF-8', 'ISO-8859-1');
 
